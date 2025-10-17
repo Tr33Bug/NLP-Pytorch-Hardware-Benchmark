@@ -102,26 +102,34 @@ rocminfo | grep -E 'Name:|Marketing Name:|gfx11'
 
 3. AMD’s Ryzen PyTorch page lists the exact ROCm 7.0.2 wheels for Python 3.12 and shows the verification commands:
 ```bash
-sudo apt install -y python3-pip
-pip3 install --upgrade pip wheel
+mkdir -p ~/pytorch-rocm && cd ~/pytorch-rocm
+uv venv --python 3.12 .venv
+source .venv/bin/activate
+python -V   # should show 3.12.x from .venv
 
-# Download AMD-tested wheels (example versions from the doc)
-wget https://repo.radeon.com/rocm/manylinux/rocm-rel-7.0.2/torch-2.8.0%2Bgitc497508-cp312-cp312-linux_x86_64.whl
-wget https://repo.radeon.com/rocm/manylinux/rocm-rel-7.0.2/torchvision-0.23.0%2Brocm7.0.2.git824e8c87-cp312-cp312-linux_x86_64.whl
-wget https://repo.radeon.com/rocm/manylinux/rocm-rel-7.0.2/torchaudio-2.8.0%2Brocm7.0.2.git6e1c7fe9-cp312-cp312-linux_x86_64.whl
-wget https://repo.radeon.com/rocm/manylinux/rocm-rel-7.0.2/triton-3.4.0%2Brocm7.0.2.gitf9e5bf54-cp312-cp312-linux_x86_64.whl
+# Replace the URLs below with the exact ones from AMD’s page if newer.
+uv pip install \
+  https://repo.radeon.com/rocm/manylinux/rocm-rel-7.0.2/torch-2.8.0%2Bgitc497508-cp312-cp312-linux_x86_64.whl \
+  https://repo.radeon.com/rocm/manylinux/rocm-rel-7.0.2/torchvision-0.23.0%2Brocm7.0.2.git824e8c87-cp312-cp312-linux_x86_64.whl \
+  https://repo.radeon.com/rocm/manylinux/rocm-rel-7.0.2/torchaudio-2.8.0%2Brocm7.0.2.git6e1c7fe9-cp312-cp312-linux_x86_64.whl \
+  https://repo.radeon.com/rocm/manylinux/rocm-rel-7.0.2/triton-3.4.0%2Brocm7.0.2.gitf9e5bf54-cp312-cp312-linux_x86_64.whl
 
-pip3 install torch-*.whl torchvision-*.whl torchaudio-*.whl triton-*.whl
 
-# optional: enable experimental AOTriton kernels
-export TORCH_ROCM_AOTRITON_ENABLE_EXPERIMENTAL=1
+  # OPTIONAL Enable experimental AOTriton kernels:  
+  # enable for this shell session
+   export TORCH_ROCM_AOTRITON_ENABLE_EXPERIMENTAL=1
+```
 
-# verify
-python3 - <<'PY'
+3. Small test
+```bash
+python - <<'PY'
 import torch
-print("torch", torch.__version__)
-print("hip available?", torch.cuda.is_available())
+print("torch:", torch.__version__)
+print("HIP available?", torch.cuda.is_available())
 if torch.cuda.is_available():
     print("device:", torch.cuda.get_device_name(0))
+    x = torch.randn(1024, 1024, device="cuda")
+    y = x @ x.t()
+    print("ok:", y.shape, y.device)
 PY
 ```
