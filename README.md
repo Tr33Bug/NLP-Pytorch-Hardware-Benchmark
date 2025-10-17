@@ -18,6 +18,7 @@ uv run train-gpt2 --num-train-epochs 1 --train-batch-size 2 --fp16
 ```
 
 Artifacts (checkpoints, logs, metrics) are written to `runs/gpt2-wikitext` by default. Adjust arguments to match your hardware capacity.
+Add `--subset-size 1024` (or any positive integer) to quickly iterate on a shuffled subset before scaling up.
 
 ### Framework 13 (Ryzen AI) One-Epoch Recipe
 1. Make sure the ROCm-enabled build of PyTorch is active. A quick check:
@@ -38,7 +39,8 @@ Artifacts (checkpoints, logs, metrics) are written to `runs/gpt2-wikitext` by de
     --warmup-steps 200 \
     --bf16 \
     --logging-steps 25 \
-    --save-total-limit 1
+    --save-total-limit 1 \
+    --subset-size 4096
    ```
    Use `--fp16` instead of `--bf16` if bfloat16 kernels are unavailable.
 3. Monitor throughput via the training logs; adjust `--gradient-accumulation-steps` upward if you hit out-of-memory errors or downward if utilization is low.
@@ -61,7 +63,8 @@ Artifacts (checkpoints, logs, metrics) are written to `runs/gpt2-wikitext` by de
     --learning-rate 5e-5 \
     --warmup-steps 200 \
     --logging-steps 25 \
-    --save-total-limit 1
+    --save-total-limit 1 \
+    --subset-size 4096
    ```
    Mixed precision is not yet stable on MPS—leave both `--fp16` and `--bf16` unset for best results.
 3. Watch `Activity Monitor` (GPU history) alongside training logs. If memory pressure rises, lower `--train-batch-size` or increase `--gradient-accumulation-steps`.

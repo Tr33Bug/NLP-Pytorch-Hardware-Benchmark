@@ -4,7 +4,7 @@ import argparse
 import logging
 import math
 from pathlib import Path
-from typing import Dict, List, Sequence
+from typing import Dict, List, Optional, Sequence
 
 from datasets import DatasetDict, load_dataset
 from transformers import (
@@ -133,6 +133,12 @@ def parse_args() -> argparse.Namespace:
         help="Comma separated list of reporting integrations (e.g. tensorboard). Leave empty to disable.",
     )
     parser.add_argument(
+        "--subset-size",
+        type=int,
+        default=None,
+        help="Limit training to this many shuffled sequences. Useful for quick experiments.",
+    )
+    parser.add_argument(
         "--resume-from-checkpoint",
         type=Path,
         default=None,
@@ -233,6 +239,13 @@ def main() -> None:
     tokenized_datasets = tokenize_dataset(raw_datasets, tokenizer, args.block_size)
 
     train_dataset = tokenized_datasets["train"]
+    if args.subset_size is not None:
+        limit = min(args.subset_size, len(train_dataset))
+        if limit <= 0:
+            raise ValueError("subset_size must be a positive integer")
+        if limit < len(train_dataset):
+            LOGGER.info("Restricting training dataset to %s sequences (shuffled)", limit)
+        train_dataset = train_dataset.shuffle(seed=args.seed).select(range(limit))
     eval_dataset = tokenized_datasets["validation"]
 
     model = AutoModelForCausalLM.from_pretrained(args.model_name)
