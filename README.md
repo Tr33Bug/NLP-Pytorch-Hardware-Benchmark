@@ -39,3 +39,23 @@ Artifacts (checkpoints, logs, metrics) are written to `runs/gpt2-wikitext` by de
    ```
    Use `--fp16` instead of `--bf16` if bfloat16 kernels are unavailable.
 3. Monitor throughput via the training logs; adjust `--gradient-accumulation-steps` upward if you hit out-of-memory errors or downward if utilization is low.
+
+### Apple M4 Mac One-Epoch Recipe
+1. Ensure Metal acceleration is active:
+   ```bash
+   PYTORCH_ENABLE_MPS_FALLBACK=1 uv run python -c "import torch; print(torch.backends.mps.is_available())"
+   ```
+   If `False`, install a nightly PyTorch build with MPS support (`pip install --pre torch --index-url https://download.pytorch.org/whl/nightly/cpu`).
+2. Launch a balanced one-epoch run for the M4’s unified memory:
+   ```bash
+   PYTORCH_ENABLE_MPS_FALLBACK=1 uv run train-gpt2 -- \
+     --num-train-epochs 1 \
+     --train-batch-size 2 \
+     --gradient-accumulation-steps 8 \
+     --learning-rate 5e-5 \
+     --warmup-steps 200 \
+     --logging-steps 25 \
+     --save-total-limit 1
+   ```
+   Mixed precision is not yet stable on MPS—leave both `--fp16` and `--bf16` unset for best results.
+3. Watch `Activity Monitor` (GPU history) alongside training logs. If memory pressure rises, lower `--train-batch-size` or increase `--gradient-accumulation-steps`.
