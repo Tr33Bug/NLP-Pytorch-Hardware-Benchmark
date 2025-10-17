@@ -1,0 +1,19 @@
+[project]
+name = "trainingbenchmark"
+version = "0.1.0"
+description = "Playground to benchmark local GPT-2 fine-tuning with PyTorch"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "accelerate>=0.27.0",
+    "datasets>=2.18.0",
+    "evaluate>=0.4.1",
+    "torch>=2.2.0",
+    "transformers>=4.38.0",
+]
+
+[project.scripts]
+train-gpt2 = "trainingbenchmark.cli:main"
+
+[tool.uv]
+package = { include = ["trainingbenchmark"] }
