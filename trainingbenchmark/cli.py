@@ -247,7 +247,7 @@ def main() -> None:
     training_args = TrainingArguments(
         output_dir=str(args.output_dir),
         overwrite_output_dir=args.overwrite_output_dir,
-        evaluation_strategy="epoch",
+        eval_strategy="epoch",
         save_strategy="epoch",
         learning_rate=args.learning_rate,
         weight_decay=args.weight_decay,
