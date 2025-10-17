@@ -16,4 +16,4 @@ dependencies = [
 train-gpt2 = "trainingbenchmark.cli:main"
 
 [tool.uv]
-package = { include = ["trainingbenchmark"] }
+package = true

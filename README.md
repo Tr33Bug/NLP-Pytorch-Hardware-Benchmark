@@ -24,7 +24,10 @@ Artifacts (checkpoints, logs, metrics) are written to `runs/gpt2-wikitext` by de
    ```bash
    uv run python -c "import torch; print(torch.cuda.is_available(), torch.cuda.get_device_name(0))"
    ```
-   If this reports `False`, install a ROCm wheel from the [PyTorch ROCm index](https://pytorch.org/get-started/locally/).
+   If this reports `False`, reinstall PyTorch from the ROCm wheelhouse:
+   ```bash
+   uv pip install --index-url https://download.pytorch.org/whl/rocm6.0 torch torchvision --upgrade
+   ```
 2. Kick off a one-epoch benchmark tuned for the Framework 13’s VRAM limits:
    ```bash
    uv run train-gpt2 -- \
@@ -45,7 +48,10 @@ Artifacts (checkpoints, logs, metrics) are written to `runs/gpt2-wikitext` by de
    ```bash
    PYTORCH_ENABLE_MPS_FALLBACK=1 uv run python -c "import torch; print(torch.backends.mps.is_available())"
    ```
-   If `False`, install a nightly PyTorch build with MPS support (`pip install --pre torch --index-url https://download.pytorch.org/whl/nightly/cpu`).
+   If `False`, reinstall the current-nightly build with MPS kernels:
+   ```bash
+   uv pip install --pre torch --index-url https://download.pytorch.org/whl/nightly/cpu --upgrade
+   ```
 2. Launch a balanced one-epoch run for the M4’s unified memory:
    ```bash
    PYTORCH_ENABLE_MPS_FALLBACK=1 uv run train-gpt2 -- \
